@@ -13,7 +13,8 @@ var env  = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 var connect = function () {
     var options = { server:{socketOptions:{keepAlive:1}}};
     if(env === 'development'){
-        mongoose.connect('mongodb://localhost/'+dbName, options);
+        mongoose.connect('mongodb://mongodb:27017/dispatchr_cms', options);
+
     }
     else {
         mongoose.connect('mongodb://tejasrr19:dispatchr@ds043694.mongolab.com:43694/dispatchr_cms', options);
