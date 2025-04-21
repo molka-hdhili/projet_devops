@@ -51,11 +51,8 @@ app.use(express.static(path.join(__dirname, 'frontend', 'client')));
 require('./server/config/routes')(app);
 
 // listen on port 3030
-//var port = process.env.PORT || 3030;
-//var server = app.listen(port,function() {
-  //  console.log("listening on port 3030");
-//});
 var port = process.env.PORT || 3030;
-var server = app.listen(port, '0.0.0.0', function () {
-    console.log("listening on port " + port);
+var server = app.listen(port,function() {
+    console.log("listening on port 3030");
 });
+
