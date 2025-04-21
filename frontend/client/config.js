@@ -1,0 +1,1 @@
+var backendUrl = '/api'; // Utiliser le chemin relatif proxyisé par Nginx

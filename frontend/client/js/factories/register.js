@@ -12,7 +12,7 @@ customersApp.factory('registerFactory', function($http){
         // add created_date to newCustomer object
 
 
-        $http.post('/customers/register',newUser).success(function(output){
+        $http.post(backendUrl + '/customers/register',newUser).success(function(output){
             console.log('factory data added:');
             console.log(output);
             callback(output);

@@ -1,7 +1,7 @@
 /**
  * Created by Tejas on 10/24/2015.
  */
-// SERVER CONTROLLER
+// SERVER CONTROLLER:
 
 // require mongoose
 var mongoose = require('mongoose');

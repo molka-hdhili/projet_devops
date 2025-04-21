@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: molka1405/dispatchr_cms-version1-mongo:3.6
+    ports:
+      - "27017:27017"
+    networks:
+      - app_network
+
+  redis:
+    image: molka1405/dispatchr_cms-version1-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app_network
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    image: molka1405/dispatchr_cms-version1-backend
+    ports:
+      - "3030:3030"
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - app_network
+    environment:
+      - NODE_ENV=qa  
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: molka1405/dispatchr_cms-version1-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge

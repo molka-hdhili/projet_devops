@@ -11,7 +11,7 @@ customersApp.factory('customerFactory', function($http){
 	factory.getCustomers = function(callback){
 		// pass data to a callback to be used by whoever calls method
 		// callback is for passing data from factory to controller
-        $http.get('/customers/show').success(function(output){
+        $http.get(backendUrl + '/customers/show').success(function(output){
             // set customers to db output
             console.log(output);
             customers = output;
@@ -25,7 +25,7 @@ customersApp.factory('customerFactory', function($http){
 
         console.log('in customerFactory',newCustomer);
 
-        $http.post('/customers/register',newCustomer).success(function(output){
+        $http.post(backendUrl + '/customers/register',newCustomer).success(function(output){
             console.log('factory data added:');
             console.log(output);
             callback(output);
@@ -35,7 +35,7 @@ customersApp.factory('customerFactory', function($http){
     // return method data from factory
     factory.deleteCustomer = function(customer,callback){
         // remove this customer (by value) from customers array
-        $http.post('/customers/delete',customer).success(function(output){
+        $http.post(backendUrl + '/customers/delete',customer).success(function(output){
             console.log('factory data deleted:', output);
             callback(output);
         });
@@ -44,7 +44,7 @@ customersApp.factory('customerFactory', function($http){
     //return method data from factory
     factory.editCustomer = function(customer, callback){
         console.log(customer);
-        $http.post('/customers/edit',customer).success(function(output){
+        $http.post(backendUrl + '/customers/edit',customer).success(function(output){
             console.log('factory data edited:',output);
             callback(output);
         })

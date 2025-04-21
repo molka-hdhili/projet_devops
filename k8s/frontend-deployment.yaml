@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: dispatchr-cms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: molka1405/dispatchr_cms-version1-frontend:latest
+        ports:
+          - containerPort: 80
+        env:
+          - name: API_URL
+            value: "http://backend:3030"  # Ce nom correspond au service backend

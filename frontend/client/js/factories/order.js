@@ -7,7 +7,7 @@ customersApp.factory('orderFactory', function($http){
 
 
     factory.getOrders = function(callback){
-        $http.get('/orders/show').success(function(output){
+        $http.get(backendUrl + '/orders/show').success(function(output){
             callback(output);
         })
     }
@@ -15,7 +15,7 @@ customersApp.factory('orderFactory', function($http){
     factory.addOrder = function(newOrder,callback) {
         newOrder.created_at = new Date();
 
-        $http.post('/orders/add',newOrder).success(function(output){
+        $http.post(backendUrl + '/orders/add',newOrder).success(function(output){
             console.log('new order added in client factory',output);
             console.log(output);
             callback(output);
@@ -24,14 +24,14 @@ customersApp.factory('orderFactory', function($http){
 
     factory.editOrder = function(order, callback){
         console.log(order);
-        $http.post('/orders/edit',order).success(function(output){
+        $http.post(backendUrl + '/orders/edit',order).success(function(output){
             console.log('factory data edited:',output);
             callback(output);
         });
     };
 
     factory.deleteOrder = function(order,callback){
-        $http.post('/orders/delete',order).success(function(output){
+        $http.post(backendUrl + '/orders/delete',order).success(function(output){
             console.log(output);
             callback(output);
         })

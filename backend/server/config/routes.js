@@ -92,9 +92,8 @@ module.exports = function(app) {
 	app.get('/customers/show',function(request,response){
 		customers.show(request,response);
 	})
-
-	// don't need this - it's for ejs; the index.html gets served w/o involving server
-	app.get('/',function(request,response){
-		response.render('index');
-	})
+// Ajouter une route pour tester la connexion
+app.get('/api/test', function(req, res) {
+    res.json({ message: 'Test route fonctionne !' });
+});
 }

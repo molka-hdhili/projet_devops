@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: dispatchr-cms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: molka1405/dispatchr_cms-version1-backend:latest
+        ports:
+        - containerPort: 3030
+        env:
+        - name: NODE_ENV
+          value: "production"  # ou "development" selon le besoin
+        - name: MONGO_URI
+          value: "mongodb://mongo/dispatchr_cms"
+        - name: REDIS_URL
+          value: "redis://redis:6379"
