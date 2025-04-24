@@ -20,4 +20,4 @@ spec:
           - containerPort: 80
         env:
           - name: API_URL
-            value: "http://backend:3030"  # Ce nom correspond au service backend
+            value: "/api" # Ce nom correspond au service backend

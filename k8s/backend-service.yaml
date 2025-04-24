@@ -4,9 +4,10 @@ metadata:
   name: backend
   namespace: dispatchr-cms
 spec:
+  type: ClusterIP  # <-- le bon type pour usage interne
   selector:
     app: backend
   ports:
-  - protocol: TCP
-    port: 3030
-    targetPort: 3030
+    - protocol: TCP
+      port: 3030          # Port exposé aux autres services
+      targetPort: 3030    # Port dans le conteneur

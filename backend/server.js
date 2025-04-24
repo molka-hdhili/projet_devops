@@ -15,14 +15,14 @@ app.set('views', path.join(__dirname, 'views'));  // Assuming views will be in t
 
 // Configure CORS pour autoriser les requêtes depuis le frontend
 app.use(cors({
-    origin: ['http://localhost', 'http://dispatchr.local:30000'], // Autoriser les deux domaines
+    origin: '*', //allow all 
     methods: 'GET,POST,PUT,DELETE',
     allowedHeaders: 'Content-Type,Authorization'
 }));
 
 // Middleware pour les en-têtes CORS
 app.use(function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', 'http://dispatchr.local:30000'); // Ajouter le domaine du frontend
+    res.header('Access-Control-Allow-Origin', '*'); // all
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     if (req.method === 'OPTIONS') {
