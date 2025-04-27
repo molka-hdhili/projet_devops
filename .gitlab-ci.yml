@@ -1,0 +1,56 @@
+stages:
+  - build
+  - test
+  - deploy
+
+# Etape de Build
+build:
+  stage: build
+  script:
+    - docker-compose -f docker-compose.yml build
+  only:
+    - master
+
+# Etape de test
+test:
+  stage: test
+  script:
+    - docker-compose -f docker-compose.yml run backend npm test
+  only:
+    - master
+
+# Déploiement pour l'environnement de développement (dev)
+deploy_dev:
+  stage: deploy
+  script:
+    - docker-compose -f docker-compose.dev.yml up -d
+  environment:
+    name: dev
+    url: http://dispatchr-cms.dev.com
+  only:
+    - master
+  when: manual
+
+# Déploiement pour l'environnement de QA
+deploy_qa:
+  stage: deploy
+  script:
+    - docker-compose -f docker-compose.qa.yml up -d
+  environment:
+    name: qa
+    url: http://dispatchr-cms.qa.com
+  only:
+    - master
+  when: manual
+
+# Déploiement pour l'environnement de production
+deploy_prod:
+  stage: deploy
+  script:
+    - docker-compose -f docker-compose.prod.yml up -d
+  environment:
+    name: prod
+    url: http://dispatchr-cms.prod.com
+  only:
+    - master
+  when: manual
