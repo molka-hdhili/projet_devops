@@ -1,56 +1,69 @@
+variables:
+  DOCKER_DRIVER: overlay2
+  KUBECONFIG: "$CI_PROJECT_DIR/.kube/config"
+
 stages:
   - build
-  - test
   - deploy
 
-# Etape de Build
-build:
+# Build et push Backend
+build_backend:
   stage: build
+  image: docker:20.10.16
+  services:
+    - name: docker:20.10.16-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  cache:
+    key: backend-${CI_COMMIT_REF_SLUG}
+    paths:
+      - /var/lib/docker
   script:
-    - docker-compose -f docker-compose.yml build
-  only:
-    - master
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker build -t "$CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA" ./backend
+    - docker push "$CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA"
+    - docker tag "$CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA" "$CI_REGISTRY_IMAGE/backend:latest"
+    - docker push "$CI_REGISTRY_IMAGE/backend:latest"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"  # trigger sur tous les pushes
 
-# Etape de test
-test:
-  stage: test
+# Build et push Frontend
+build_frontend:
+  stage: build
+  image: docker:20.10.16
+  services:
+    - name: docker:20.10.16-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  cache:
+    key: frontend-${CI_COMMIT_REF_SLUG}
+    paths:
+      - /var/lib/docker
   script:
-    - docker-compose -f docker-compose.yml run backend npm test
-  only:
-    - master
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker build -t "$CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA" ./frontend
+    - docker push "$CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA"
+    - docker tag "$CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA" "$CI_REGISTRY_IMAGE/frontend:latest"
+    - docker push "$CI_REGISTRY_IMAGE/frontend:latest"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
 
-# Déploiement pour l'environnement de développement (dev)
-deploy_dev:
+# Déploiement Kubernetes (seulement sur master)
+deploy_kubernetes:
   stage: deploy
+  image:
+    name: lachlanevenson/k8s-kubectl:latest
+    entrypoint: [""]
+  before_script:
+    - mkdir -p "$(dirname "$KUBECONFIG")"
+    - echo "$KUBECONFIG_CONTENT" > "$KUBECONFIG"
   script:
-    - docker-compose -f docker-compose.dev.yml up -d
-  environment:
-    name: dev
-    url: http://dispatchr-cms.dev.com
-  only:
-    - master
-  when: manual
-
-# Déploiement pour l'environnement de QA
-deploy_qa:
-  stage: deploy
-  script:
-    - docker-compose -f docker-compose.qa.yml up -d
-  environment:
-    name: qa
-    url: http://dispatchr-cms.qa.com
-  only:
-    - master
-  when: manual
-
-# Déploiement pour l'environnement de production
-deploy_prod:
-  stage: deploy
-  script:
-    - docker-compose -f docker-compose.prod.yml up -d
-  environment:
-    name: prod
-    url: http://dispatchr-cms.prod.com
-  only:
-    - master
-  when: manual
+    - kubectl set image deployment/backend backend="$CI_REGISTRY_IMAGE/backend:latest" --record
+    - kubectl set image deployment/frontend frontend="$CI_REGISTRY_IMAGE/frontend:latest" --record
+    - kubectl rollout status deployment/backend
+    - kubectl rollout status deployment/frontend
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: on_success
+  tags:
+    - local
