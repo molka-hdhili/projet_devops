@@ -3,6 +3,7 @@ variables:
 
 stages:
   - build
+  - test
   - deploy
 
 build_backend:
@@ -37,13 +38,45 @@ build_frontend:
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
 
+test_backend:
+  stage: test
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  before_script:
+    - apk add --no-cache curl docker-compose
+    - docker-compose -f docker-compose.qa.yml up -d
+    - echo "⏳ Démarrage du backend..."
+    - sleep 15
+  script:
+    - echo "🧪 Vérification de /health"
+    - curl --fail http://localhost:3030/health || (echo "❌ Le backend ne répond pas !" && exit 1)
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+
+test_frontend:
+  stage: test
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  before_script:
+    - apk add --no-cache curl docker-compose
+    - docker-compose -f docker-compose.qa.yml up -d
+    - echo "⏳ Démarrage du frontend..."
+    - sleep 20
+  script:
+    - echo "🧪 Test de la page d'accueil"
+    - curl --fail http://localhost | grep -i "<html>" || (echo "❌ Le frontend ne répond pas !" && exit 1)
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+
 deploy_kubernetes:
   stage: deploy
   image:
     name: lachlanevenson/k8s-kubectl:latest
     entrypoint: [""]
   script:
-    - echo "Déploiement Kubernetes en cours..."
+    - echo "🚀 Déploiement Kubernetes en cours..."
     - kubectl get nodes
     - kubectl get pods --all-namespaces
     - kubectl apply -f k8s/
