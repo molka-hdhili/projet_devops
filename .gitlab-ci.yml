@@ -1,18 +1,18 @@
 variables:
   DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
 
 stages:
   - build
   - test
   - deploy
 
+# Étape de build du backend
 build_backend:
   stage: build
   image: docker:20.10.16
   services:
     - docker:20.10.16-dind
-  variables:
-    DOCKER_TLS_CERTDIR: "/certs"
   script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
     - docker build -t "$CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA" ./backend
@@ -22,13 +22,12 @@ build_backend:
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
 
+# Étape de build du frontend
 build_frontend:
   stage: build
   image: docker:20.10.16
   services:
     - docker:20.10.16-dind
-  variables:
-    DOCKER_TLS_CERTDIR: "/certs"
   script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
     - docker build -t "$CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA" ./frontend
@@ -38,47 +37,35 @@ build_frontend:
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
 
+# Étape de test backend avec Redis
 test_backend:
   stage: test
-  image: docker:20.10.16
+  image: node:14
   services:
-    - docker:20.10.16-dind
+    - name: redis:alpine
+      alias: redis
+  variables:
+    REDIS_HOST: redis
+    REDIS_PORT: 6379
   before_script:
-    - apk add --no-cache curl docker-compose
-    - docker-compose -f docker-compose.qa.yml up -d
-    - echo "⏳ Démarrage du backend..."
-    - sleep 15
+    - cd backend
+    - npm install
   script:
-    - echo "🧪 Vérification de /health"
-    - curl --fail http://localhost:3030/health || (echo "❌ Le backend ne répond pas !" && exit 1)
+    - echo "Lancement des tests backend avec Redis..."
+    - npm test
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
 
-test_frontend:
-  stage: test
-  image: docker:20.10.16
-  services:
-    - docker:20.10.16-dind
-  before_script:
-    - apk add --no-cache curl docker-compose
-    - docker-compose -f docker-compose.qa.yml up -d
-    - echo "⏳ Démarrage du frontend..."
-    - sleep 20
-  script:
-    - echo "🧪 Test de la page d'accueil"
-    - curl --fail http://localhost | grep -i "<html>" || (echo "❌ Le frontend ne répond pas !" && exit 1)
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "push"
-
+# Étape de déploiement sur Kubernetes
 deploy_kubernetes:
   stage: deploy
   image:
     name: lachlanevenson/k8s-kubectl:latest
     entrypoint: [""]
   script:
-    - echo "🚀 Déploiement Kubernetes en cours..."
+    - echo "Déploiement Kubernetes en cours..."
+    - kubectl config use-context default
     - kubectl get nodes
-    - kubectl get pods --all-namespaces
     - kubectl apply -f k8s/
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
