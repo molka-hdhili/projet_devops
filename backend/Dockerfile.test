@@ -1,0 +1,17 @@
+# Utilise une version plus récente de Node.js pour les tests
+FROM node:14
+
+# Dossier de travail dans le container
+WORKDIR /app
+
+# Copie tout le code dans le container
+COPY . .
+
+# Installe les dépendances de ton projet (en conservant les anciennes versions)
+RUN npm install
+
+# Ajoute Mocha et Supertest pour les tests
+RUN npm install --save-dev mocha@2.5.3 supertest@1.2.0
+
+# Commande de test
+CMD ["npm", "test"]
