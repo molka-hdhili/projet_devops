@@ -13,6 +13,7 @@ var config_mongoose = require('./server/config/mongoose');
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));  // Assuming views will be in the 'views' folder
 
+
 // Configure CORS pour autoriser les requêtes depuis le frontend
 app.use(cors({
     origin: '*', //allow all 
@@ -52,7 +53,11 @@ require('./server/config/routes')(app);
 
 // listen on port 3030
 var port = process.env.PORT || 3030;
-var server = app.listen(port,function() {
-    console.log("listening on port 3030");
-});
+if (require.main === module) {
+    app.listen(port, function () {
+        console.log("listening on port " + port);
+    });
+}
+
+module.exports = app;
 

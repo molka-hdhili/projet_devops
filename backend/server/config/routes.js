@@ -93,7 +93,7 @@ module.exports = function(app) {
 		customers.show(request,response);
 	})
 // Ajouter une route pour tester la connexion
-app.get('/api/test', function(req, res) {
+app.get('/api/test', function(request, response) {
     res.json({ message: 'Test route fonctionne !' });
 });
 }

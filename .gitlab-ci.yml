@@ -7,7 +7,9 @@ stages:
   - test
   - deploy
 
-# Étape de build du backend
+# -----------------------------------
+# BUILD BACKEND
+# -----------------------------------
 build_backend:
   stage: build
   image: docker:20.10.16
@@ -22,7 +24,9 @@ build_backend:
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
 
-# Étape de build du frontend
+# -----------------------------------
+#  BUILD FRONTEND
+# -----------------------------------
 build_frontend:
   stage: build
   image: docker:20.10.16
@@ -37,33 +41,42 @@ build_frontend:
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
 
-# Étape de test backend avec Redis
+# -----------------------------------
+#  TEST BACKEND AVEC REDIS & MONGO
+# -----------------------------------
 test_backend:
   stage: test
   image: node:14
   services:
     - name: redis:alpine
       alias: redis
+    - name: mongo:4.4
+      alias: mongo
   variables:
     REDIS_HOST: redis
     REDIS_PORT: 6379
+    MONGO_URL: "mongodb://mongo:27017/testdb"
   before_script:
     - cd backend
     - npm install
+    #  Optionnel : attendre que Mongo soit prêt
+    - until nc -z mongo 27017; do echo "Attente de Mongo..."; sleep 2; done
   script:
-    - echo "Lancement des tests backend avec Redis..."
+    - echo "Lancement des tests backend avec Redis et Mongo…"
     - npm test
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
 
-# Étape de déploiement sur Kubernetes
+# -----------------------------------
+#  DEPLOY KUBERNETES
+# -----------------------------------
 deploy_kubernetes:
   stage: deploy
   image:
     name: lachlanevenson/k8s-kubectl:latest
     entrypoint: [""]
   script:
-    - echo "Déploiement Kubernetes en cours..."
+    - echo " Déploiement Kubernetes en cours…"
     - kubectl config use-context default
     - kubectl get nodes
     - kubectl apply -f k8s/
@@ -71,4 +84,4 @@ deploy_kubernetes:
     - if: $CI_COMMIT_BRANCH == "master"
       when: on_success
   tags:
-    - local
+    - local  #  Oui, si runner local; sinon change par le tag de ton runner Kubernetes
