@@ -3,7 +3,7 @@
   "description": "Customer Order Management System",
   "version": "1.0.0",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha tests/**/*.test.js"
   },
   "author": "Tejas Rao",
   "license": "ISC",
@@ -22,4 +22,11 @@
     "node": "0.12.x",
     "npm": "2.11.x"
   }
+  ,
+"devDependencies": {
+  "mocha": "^3.0.0",
+  "chai": "^3.5.0",
+  "supertest": "^2.0.0"
+}
+
 }
